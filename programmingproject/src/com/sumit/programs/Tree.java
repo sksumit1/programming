@@ -1,8 +1,14 @@
 package com.sumit.programs;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -13,6 +19,7 @@ public class Tree {
 	
 	Node root = null;
 	BufferedReader reader = null;
+	String fileName ="tree.ser";
 	Tree(BufferedReader reader) {
 		this.reader = reader;
 	}
@@ -31,11 +38,58 @@ public class Tree {
 		}
 	}
 	
+	void save() {
+		ObjectOutputStream oos = null;
+		try {
+			File f = new File(fileName);
+	    	f.delete();
+			oos = new ObjectOutputStream(new FileOutputStream(fileName));
+			oos.writeObject(root);
+		} catch(Exception ex) {
+			ex.printStackTrace();
+		} finally {
+			if(oos != null) {
+				try {
+					oos.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	void load() {
+		FileInputStream fis = null;
+    	ObjectInputStream ois = null;
+		try {
+			fis = new FileInputStream(fileName);
+			ois = new ObjectInputStream(fis);
+			this.root = (Node) ois.readObject();
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (ois != null) {
+				try {
+					ois.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			if (fis != null) {
+				try {
+					fis.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
 	void takeInput() throws IOException {
 		BufferedReader reader = null;			
 		reader = new BufferedReader(new InputStreamReader(System.in));
 		while(true) {
-			System.out.println("1.Add Node 2.DisplayTree 3.Exit");
+			System.out.println("1.Add Node 2.DisplayTree 3.Save 4.Load 5.Exit");
 			String command = reader.readLine();
 			if("1".equals(command.trim())) {
 				System.out.println("Enter node parent isonleft : Eg. 2 1 true");
@@ -50,6 +104,10 @@ public class Tree {
 			} else if("2".equals(command.trim())) {
 				BTreePrinter.printNode(root);
 			} else if("3".equals(command.trim())) {
+				this.save();
+			} else if("4".equals(command.trim())) {
+				this.load();
+			} else if("5".equals(command.trim())) {
 				System.out.println("Exiting...");
 				return;
 			} else {
@@ -133,7 +191,9 @@ public class Tree {
 
 }
 
-class Node {
+class Node implements Serializable {
+
+	private static final long serialVersionUID = 6216185550477151641L;
 	int value;
 	Node left = null,right = null;
 	Node(int value) {
