@@ -12,36 +12,48 @@ import java.util.Queue;
 public class Tree {
 	
 	Node root = null;
+	BufferedReader reader = null;
+	Tree(BufferedReader reader) {
+		this.reader = reader;
+	}
+	
+	void init() throws IOException {
+		reader = new BufferedReader(new InputStreamReader(System.in));
+	}
+	
+	void close() {
+		if(reader != null) {
+			try {
+				reader.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 	
 	void takeInput() throws IOException {
-		BufferedReader reader = null;
-		try {			
-			reader = new BufferedReader(new InputStreamReader(System.in));
-			while(true) {
-				System.out.println("1.Add Node 2.DisplayTree 3.Exit");
-				String command = reader.readLine();
-				if("1".equals(command.trim())) {
-					System.out.println("Enter node parent isonleft : Eg. 2 1 true");
-					command = reader.readLine();
-					String args[] = command.split(" ");
-					if(args.length == 1) {
-						this.addNode(Integer.parseInt(args[0]), 0, true);
-						System.out.println("Added root node");
-					} else {
-						this.addNode(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Boolean.parseBoolean(args[2]));
-					}
-				} else if("2".equals(command.trim())) {
-					BTreePrinter.printNode(root);
-				} else if("3".equals(command.trim())) {
-					System.out.println("Exiting...");
-					return;
+		BufferedReader reader = null;			
+		reader = new BufferedReader(new InputStreamReader(System.in));
+		while(true) {
+			System.out.println("1.Add Node 2.DisplayTree 3.Exit");
+			String command = reader.readLine();
+			if("1".equals(command.trim())) {
+				System.out.println("Enter node parent isonleft : Eg. 2 1 true");
+				command = reader.readLine();
+				String args[] = command.split(" ");
+				if(args.length == 1) {
+					this.addNode(Integer.parseInt(args[0]), 0, true);
+					System.out.println("Added root node");
 				} else {
-					System.out.println("Not a valid input");
+					this.addNode(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Boolean.parseBoolean(args[2]));
 				}
-			}
-		} finally {
-			if(reader != null) {
-				reader.close();
+			} else if("2".equals(command.trim())) {
+				BTreePrinter.printNode(root);
+			} else if("3".equals(command.trim())) {
+				System.out.println("Exiting...");
+				return;
+			} else {
+				System.out.println("Not a valid input");
 			}
 		}
 	}
@@ -113,8 +125,10 @@ public class Tree {
 	}
 	    
     public static void main(String[] args) throws IOException {
-		Tree tree = new Tree();
+		Tree tree = new Tree(null);
+		tree.init();
 		tree.takeInput();
+		tree.close();
 	}
 
 }
