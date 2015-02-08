@@ -9,7 +9,7 @@ import java.util.List;
 
 /**
  * Given a binary tree and 2 nodes, determine the least common ancestor
- *
+ * The program doesn't make use of the parent pointer
  *
  */
 public class LCA {

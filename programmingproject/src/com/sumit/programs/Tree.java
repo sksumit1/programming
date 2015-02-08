@@ -128,10 +128,12 @@ public class Tree {
 				System.out.println("Adding to left branch");
 				node.left = p.left;
 				p.left = node;
+				node.parent = p;
 			} else {
 				System.out.println("Adding to right branch");
 				node.right = p.right;
 				p.right = node;
+				node.parent = p;
 			}
 		} else {
 			System.out.println("Parent not found");
@@ -195,7 +197,7 @@ class Node implements Serializable {
 
 	private static final long serialVersionUID = 6216185550477151641L;
 	int value;
-	Node left = null,right = null;
+	Node left = null,right = null, parent = null;;
 	Node(int value) {
 		this.value = value;
 	}
