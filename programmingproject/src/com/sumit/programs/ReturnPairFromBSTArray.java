@@ -4,16 +4,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-/**
- * 
- * Given a array, determine if its a BST
- * For any node i, its child are 2i and 2i+1
- * For any node i, its parent is mod|(i-1)/2|
- */
-public class DetermineBSTArray {
+public class ReturnPairFromBSTArray {
 	
 	BufferedReader reader = null;
 	int array[] = null;
+	int sum;
 	
 	void init() throws IOException {
 		reader = new BufferedReader(new InputStreamReader(System.in));
@@ -38,37 +33,48 @@ public class DetermineBSTArray {
 			for (int i = 0; i < data.length; i++) {
 				array[i] = Integer.parseInt(data[i]);
 			}
+			System.out.println("Enter sum");
+			sum = Integer.parseInt(reader.readLine());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 	
-	void determineBST() {
-		if(this.checkBST(0,Integer.MIN_VALUE,Integer.MAX_VALUE)) {
-			System.out.println("This is a BST");
-		} else {
-			System.out.println("This is not a BST");
+	void listPairs() {
+		for (int i = 0; i < array.length; i++) {
+			this.findPairs(i);
 		}
 	}
 	
-	private boolean checkBST(int index,Integer min, Integer max) {
-		if(index >= array.length) {
+	private void findPairs(int index) {
+		if(index >= array.length || array[index] == -1) {
+			return;
+		}
+		int target = sum - array[index];
+		if(target == 0) {
+			System.out.println(array[index]);
+		} else if(this.find(target, 0)) {
+			System.out.println(array[index]+" "+target);
+		}
+	}
+	
+	private boolean find(int value,int indexptr) {
+		if(indexptr >= array.length || array[indexptr] == -1) {
+			return false;
+		} else if(value == array[indexptr]) {
 			return true;
+		} else  if(value < array[indexptr]) {
+			return this.find(value, 2*indexptr+1);
+		} else {
+			return this.find(value, 2*indexptr+2);
 		}
-		if((min != -1 && array[index] <= min) || (max != -1 && array[index] >= max)) {
-			return false;
-		}
-		if(!(this.checkBST(2*index+1, min, array[index])) || !(this.checkBST(2*index+2, array[index], max))) {
-			return false;
-		}
-		return true;
 	}
 	
 	public static void main(String[] args) throws IOException {
-		DetermineBSTArray obj = new DetermineBSTArray();
+		ReturnPairFromBSTArray obj = new ReturnPairFromBSTArray();
 		obj.init();
 		obj.takeInput();
-		obj.determineBST();
+		obj.listPairs();
 		obj.close();
 	}
 
