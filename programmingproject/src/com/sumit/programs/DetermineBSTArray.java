@@ -45,37 +45,24 @@ public class DetermineBSTArray {
 	}
 	
 	void determineBST() {
-		this.findmax(0);
-		if(this.isBST) {
+		if(this.checkBST(0,Integer.MIN_VALUE,Integer.MAX_VALUE)) {
 			System.out.println("This is a BST");
+		} else {
+			System.out.println("This is not a BST");
 		}
 	}
 	
-	private int findmax(int index) {
+	private boolean checkBST(int index,Integer min, Integer max) {
 		if(index >= array.length) {
-			return -1;
+			return true;
 		}
-		int left = -1 ;
-		if((index*2+1) < array.length) {
-			left = findmax(index*2+1);
+		if((min != -1 && array[index] <= min) || (max != -1 && array[index] >= max)) {
+			return false;
 		}
-		int right = -1;
-		if((index*2+2) < array.length) {
-			right = findmax(index*2+2);
+		if(!(this.checkBST(2*index+1, min, array[index])) || !(this.checkBST(2*index+2, array[index], max))) {
+			return false;
 		}
-		if(left != -1 && left > array[index]) {
-			System.out.println("This is not a BST");
-			this.isBST = false;
-		}
-		if(right != -1 && right < array[index]) {
-			System.out.println("This is not a BST");
-			this.isBST = false;
-		}
-		if(right != -1) {
-			return right;
-		} else {
-			return array[index];
-		}
+		return true;
 	}
 	
 	public static void main(String[] args) throws IOException {
