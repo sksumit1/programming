@@ -2,12 +2,27 @@ package com.sumit.programs;
 
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 /**
  * Searching word inside array of words. Words are delimited by space. The search is case insensitive
+ * 
+ * A standard trie for a set of strings S, is an ordered tree such that
+ * 1. Each node, but the root is labeled with a character
+ * 2. Children of a node are alphabetically ordered
+ * 3. Path from external nodes to root yield string of S.
  *
+ * W : Size of data
+ * d : Alphabets size (E.g case insensitive English chars = 26)
+ * m : Size of pattern
+ * 
+ * Space complexity : O(W)
+ * Find,Insert,Remove operations : O(d m)
+ * 
+ * Disadvantages:
+ * Space requirement is too much. (Total no. of characters in the dataset)
+ * Reason one can search here is because we have placed defined boundaries.
+ * 
  */
 public class Tries {
 	

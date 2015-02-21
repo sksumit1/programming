@@ -10,15 +10,35 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Searching word inside array of words. Words are delimited by space. The search is case insensitive
- * 1. Tries with nodes of degree at least 2
- * 2. Obtained from standard tries by compressing chain of redundant nodes
- * 3. Look for all nodes of degree 1 and remove those node. Take that node and collapse to its parent
  * 
- * Fact : A tree in which each node has at least 2 nodes, the tree has at most M-1 internal nodes, where M is no. of leaves.
- * Pattern matching complexity O(M)
+ * A suffix tree T for string S is a rooted directed tree whose edge are labeled with non-empty substrings of S.
+ * Each leaf corresponds to a suffix of S in the sense that the concatenation of edge-labels on the unique path from the root to the leaf, spells out a suffix.
+ * Each internal node, other than the root, has at least 2 children.
+ * No two out-edge of a node can have edge-labels with the same first character.
+ * E.g. : Used in undefined boundaries (like genes matching)
+ * Its another type of compressed trie.
+ * No. of suffixes = no. of nodes
+ * Size of tree = no. of leaves + no. of internal nodes
+ *              ~ n + (n-1)
+ *              = O(n^2)
+ * 
+ * If the pattern appears in the document, there is some suffix whose prefix is that pattern.
+ * Build complexity = O(n*n) = O(n^2)
+ * $ : Terminal character. It doesn't appear in tree T and is lexically smallest.
+ * 
+ * Its uses :
+ * 1. Find if a string 'S' is a substring of T.
+ *    Every substring is a prefix of some suffix of T. Follow the 'S' in trie/suffix tree and don't fall off.
+ * 2. Check if string 'S' is a suffix of T.
+ *    Follow the 's' in the trie and end up with $.
+ * 3. Find the count of number of times a string 'S' occurs as a substring of T.
+ *    Follow the 's' in trie. IF we fall off the trie, ans = 0.
+ *    If we don't, we may end up at node 'n'. In this case, ans = no. of leaf nodes subrooted at 'n'
+ * 4. Find the longest repeated substring of T.
+ * 	  Find the deepest node with more than 1 child.
  *
  */
-public class CompressedTries {
+public class SuffixTree {
 	
 	class Node {
 		String character;
@@ -141,8 +161,8 @@ public class CompressedTries {
 	}
 	
 	public static void main(String[] args) {
-		String document = "bear bell bid bull buy sell stock stop";
-		CompressedTries trie = new CompressedTries();
+		String document = "bearbellbidbullbuysellstockstop";
+		SuffixTree trie = new SuffixTree();
 		trie.initializeTrie(document);
 		//trie.printTrie();
 		trie.searchWordPattern("buy");
