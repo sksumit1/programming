@@ -9,7 +9,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Searching word inside array of words. Words are delimited by space. The search is case insensitive
+ * Searching pattern inside array of words. Words are delimited by space. The search is case insensitive
  * 
  * A suffix tree T for string S is a rooted directed tree whose edge are labeled with non-empty substrings of S.
  * Each leaf corresponds to a suffix of S in the sense that the concatenation of edge-labels on the unique path from the root to the leaf, spells out a suffix.
@@ -70,24 +70,24 @@ public class SuffixTree {
 	private Node root = new Node("");
 	
 	public void initializeTrie(String document) {
-		String[] docWords = document.toLowerCase().split(" ");
-		for (int i = 0; i < docWords.length; i++) {
+		for (int i = document.length() -1; i >= 0; i--) {
+			String docWord = document.toLowerCase().substring(i);
 			//System.out.println("Processing for "+docWords[i]+" "+i);
 			Node parentNode = root;
 			int startIndex = 0;
-			while(startIndex < docWords[i].length()) {
+			while(startIndex < docWord.length()) {
 				AtomicInteger intRef = new AtomicInteger(0);
-				Node node = this.childNodeWithCharacter(parentNode, docWords[i], startIndex, intRef);
+				Node node = this.childNodeWithCharacter(parentNode, docWord, startIndex, intRef);
 				startIndex += intRef.get();
 				if(node == null) {
-					//No child contains the prefix of the word. Create a new child
-					Node child = new Node(docWords[i].substring(startIndex));
+					//No child contains the prefix of the pattern. Create a new child
+					Node child = new Node(docWord.substring(startIndex));
 					child.childs.add(new Node("$")); //Add terminator character to child
 					parentNode.childs.add(child);
 					break;
 				}
 				if(node.character.length() == intRef.get()) {
-					//The child node is exausted but is a prefix of the word. Test childs of this child node
+					//The child node is exausted but is a prefix of the pattern. Test childs of this child node
 					parentNode = node;
 				} else {
 					//Need to break the child into 2 parts
@@ -97,7 +97,7 @@ public class SuffixTree {
 					node.character = node.character.substring(intRef.get());
 					childPart1.childs.add(node);
 					//New child
-					Node newChild = new Node(docWords[i].substring(startIndex));
+					Node newChild = new Node(docWord.substring(startIndex));
 					newChild.childs.add(new Node("$")); //Add terminator character to child
 					childPart1.childs.add(newChild);
 					parentNode.childs.add(childPart1);
@@ -136,27 +136,23 @@ public class SuffixTree {
 		TriePrinter.printNode(root);
 	}
 	
-	void searchWordPattern(String word) {
+	void searchWordPattern(String pattern) {
 		Node parent = this.root;
 		AtomicInteger indexRef = new AtomicInteger(0);
 		int startIndex = 0;
-		while (startIndex < word.length()) {
-			Node child = this.childNodeWithCharacter(parent, word,startIndex, indexRef);
+		while (startIndex < pattern.length()) {
+			Node child = this.childNodeWithCharacter(parent, pattern,startIndex, indexRef);
 			startIndex += indexRef.get();
 			if(child != null) {
 				parent = child;
 				continue;
 			} else {
-				System.out.println("The word doesnot exist in the document");
+				System.out.println("The pattern doesnot exist in the document");
 				return;
 			}
 		}
 		if(parent != null) {
-			if(parent.character.equals(word.substring(startIndex-indexRef.get()))) {
-				System.out.println("The exact word exists");
-			} else {
-				System.out.println("The word exists but its a prefix of a different word");
-			}
+				System.out.println("The pattern exists in the document");
 		}
 	}
 	
