@@ -11,14 +11,11 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.nio.file.spi.FileTypeDetector;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.PriorityQueue;
-
-import sun.nio.fs.DefaultFileTypeDetector;
 
 public class HuffmanEncoding {
 	
@@ -30,8 +27,9 @@ public class HuffmanEncoding {
 	 * @return
 	 * @throws IOException
 	 */
-	private boolean isText(String file) throws IOException {
+	/*private boolean isText(String file) throws IOException {
 		File f = new File(file);
+		System.out.println(f.exists());
 		FileTypeDetector ftd = DefaultFileTypeDetector.create();
 		String type = ftd.probeContentType(f.toPath());
 		if(type != null && type.toLowerCase().matches("text")) {
@@ -39,6 +37,9 @@ public class HuffmanEncoding {
 		} else {
 			return false;
 		}
+	}*/
+	private boolean isText(String file) {
+		return true;   //For images etc make this return false
 	}
 	
 	class Node  implements Serializable , Comparable{
@@ -109,7 +110,7 @@ public class HuffmanEncoding {
 						return -1;
 					}else if(content.length < ((Node)o).getContent().length) {
 						return 1;
-					} else if(content.length < ((Node)o).getContent().length) {
+					} else if(content.length > ((Node)o).getContent().length) {
 						return -1;
 					} else {
 						comp = 0;
@@ -130,8 +131,8 @@ public class HuffmanEncoding {
 	private Map<byte[],Integer> items = new HashMap<byte[],Integer>();
 	private PriorityQueue<Node> huffQueue = new PriorityQueue<Node>();
 	private Node huffTree = null;
-	private Map<byte[],Byte> encodingMap = new HashMap<byte[],Byte>();
-	private Map<Byte,byte[]> decodingMap = new HashMap<Byte,byte[]>();
+	private Map<ByteArrayWrapper,Byte> encodingMap = new HashMap<ByteArrayWrapper,Byte>();
+	private Map<Byte,ByteArrayWrapper> decodingMap = new HashMap<Byte,ByteArrayWrapper>();
 	
 	private void generateHuffEncodingMap(String file) throws IOException, UnsupportedEncodingException {
 		if(isText(file)) {
@@ -171,7 +172,7 @@ public class HuffmanEncoding {
 			Node n = new Node(content, count);
 			huffQueue.add(n);
 		}
-		//Build the priority heap (Huffman logic here
+		//Build the priority heap Huffman logic here
 		while(true) {
 			Node n1 = huffQueue.poll();
 			if(n1 == null) {
@@ -190,12 +191,30 @@ public class HuffmanEncoding {
 		//Build encode map
 		traverseNode(huffTree,"0");
 		//Build decode map
-		Iterator<byte[]> it1 = encodingMap.keySet().iterator();
+		Iterator<ByteArrayWrapper> it1 = encodingMap.keySet().iterator();
 		while(it1.hasNext()) {
-			byte[] item = it1.next();
+			ByteArrayWrapper item = it1.next();
 			decodingMap.put(encodingMap.get(item), item);
 		}
 		
+	}
+	
+	private void printEncodingMap() throws UnsupportedEncodingException {
+		Iterator<ByteArrayWrapper> it1 = encodingMap.keySet().iterator();
+		while(it1.hasNext()) {
+			ByteArrayWrapper item = it1.next();
+			Byte code = encodingMap.get(item);
+			System.out.println(new String(item.getData(), "UTF-8")+" -encodes to-> "+code);
+		}
+	}
+	
+	private void printDecodingMap() throws UnsupportedEncodingException {
+		Iterator<Byte> it1 = decodingMap.keySet().iterator();
+		while(it1.hasNext()) {
+			Byte code = it1.next();
+			ByteArrayWrapper item = decodingMap.get(code);
+			System.out.println(code+" -decodes to-> "+new String(item.getData(), "UTF-8"));
+		}
 	}
 	
 	private void traverseNode(Node n, String code) {
@@ -204,7 +223,7 @@ public class HuffmanEncoding {
 		}
 		if(n.content != null) {
 			//This is a leaf
-			encodingMap.put(n.content, Byte.decode(code));
+			encodingMap.put(new ByteArrayWrapper(n.content), Byte.parseByte(code, 2));
 			return;
 		} else {
 			traverseNode(n.childs[0],code+"0");
@@ -230,11 +249,12 @@ public class HuffmanEncoding {
 						continue;
 					} else {
 						byte[] item = words[i].getBytes("UTF-8");
-						byte code = encodingMap.get(item);
+						Byte code = encodingMap.get(new ByteArrayWrapper(item));
 						byte [] ar = {code};
-						fos.write(ar);
+						fos.write(ar);						
 					}
 				}
+				fos.write("\n".getBytes());
 			}
 		} else {
 			bis = new BufferedInputStream(new FileInputStream(file), MCU);
@@ -243,7 +263,7 @@ public class HuffmanEncoding {
 			fos = new FileOutputStream(file+".coded");
 			byte[] element = new byte[MCU];
 			while(bis.read(element) != -1) {
-				byte code = encodingMap.get(element);
+				Byte code = encodingMap.get(element);
 				byte [] ar = {code};
 				fos.write(ar);
 			}
@@ -272,11 +292,18 @@ public class HuffmanEncoding {
 		String encodedFile = file+".coded";
 		bis = new BufferedInputStream(new FileInputStream(encodedFile),1);
 		fos = new FileOutputStream(file+".decoded");
-		Byte b = Byte.valueOf((byte) bis.read());
-		fos.write(decodingMap.get(b));
-		if(isTextFile) {
-			fos.write(" ".getBytes("UTF-8"));
-		}		
+		Byte b = null;
+		while((b = Byte.valueOf((byte) bis.read())) != -1) {
+			ByteArrayWrapper data = decodingMap.get(b);
+			if(data == null) {
+				fos.write("\n".getBytes());
+				continue;
+			}
+			fos.write(data.getData());
+			if(isTextFile) {
+				fos.write(" ".getBytes("UTF-8"));
+			}
+		}
 		} finally {
 			if(fos != null) {
 				fos.close();
@@ -326,7 +353,7 @@ public class HuffmanEncoding {
 		try {
 			fis = new FileInputStream(file+".codermap");
 			ois = new ObjectInputStream(fis);
-			this.decodingMap = (Map<Byte, byte[]>) ois.readObject();
+			this.decodingMap = (Map<Byte, ByteArrayWrapper>) ois.readObject();
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -351,15 +378,58 @@ public class HuffmanEncoding {
 	//Run it once to save data
 	//Run it again to decode data 
 	public static void main(String[] args) throws Exception {
-		String file = "abc.txt";
+		String file = "huffman.txt";
 		HuffmanEncoding obj = new HuffmanEncoding();
 		obj.generateHuffEncodingMap(file);
-		obj.encodeFile(file);
-		obj.saveDecodingMap(file);
-		obj.loadDecodingMap(file);
+		obj.printEncodingMap();
+		obj.printDecodingMap();
+		obj.encodeFile(file);		
+		//obj.saveDecodingMap(file); Make this part serializable
+		//obj.loadDecodingMap(file);
 		obj.touch(file); //This tells if the encoded file is text or binary
 		obj.decodeFile(file);
 		
+	}
+	
+	final class ByteArrayWrapper implements Serializable
+	{
+	    private final Byte[] data;
+
+	    public ByteArrayWrapper(byte[] data)
+	    {
+	        if (data == null)
+	        {
+	            throw new NullPointerException();
+	        }
+	        this.data = new Byte[data.length];
+	        for (int i = 0; i < data.length; i++) {
+				this.data[i] = new Byte(data[i]);
+			}
+	    }
+	    
+	    public byte[] getData() {
+	    	byte[] temp = new byte[data.length];
+	    	for (int i = 0; i < data.length; i++) {
+				temp[i] = data[i].byteValue();
+			}
+	    	return temp;
+	    }
+
+	    @Override
+	    public boolean equals(Object other)
+	    {
+	        if (!(other instanceof ByteArrayWrapper))
+	        {
+	            return false;
+	        }
+	        return Arrays.equals(data, ((ByteArrayWrapper)other).data);
+	    }
+
+	    @Override
+	    public int hashCode()
+	    {
+	        return Arrays.hashCode(data);
+	    }
 	}
 	
 }
