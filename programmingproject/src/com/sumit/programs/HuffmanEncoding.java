@@ -347,6 +347,21 @@ public class HuffmanEncoding {
 		}
 	}
 	
+	//TODO: Make this program menu driven.
+	//Run it once to save data
+	//Run it again to decode data
+	public static void main(String[] args) throws Exception {
+		String file = "abc.txt";
+		HuffmanEncoding obj = new HuffmanEncoding();
+		obj.generateHuffEncodingMap(file);
+		obj.encodeFile(file);
+		obj.saveDecodingMap(file);
+		obj.loadDecodingMap(file);
+		obj.touch(file); //This tells if the encoded file is text or binary
+		obj.decodeFile(file);
+		
+	}
+	
 }
 
 
