@@ -4,8 +4,11 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.spi.FileTypeDetector;
@@ -124,11 +127,13 @@ public class HuffmanEncoding {
 		
 	}
 	
-	Map<byte[],Integer> items = new HashMap<byte[],Integer>();
+	private Map<byte[],Integer> items = new HashMap<byte[],Integer>();
 	private PriorityQueue<Node> huffQueue = new PriorityQueue<Node>();
 	private Node huffTree = null;
+	private Map<byte[],Byte> encodingMap = new HashMap<byte[],Byte>();
+	private Map<Byte,byte[]> decodingMap = new HashMap<Byte,byte[]>();
 	
-	private void generateHuffTable(String file) throws IOException, UnsupportedEncodingException {
+	private void generateHuffEncodingMap(String file) throws IOException, UnsupportedEncodingException {
 		if(isText(file)) {
 			BufferedReader br = new BufferedReader(new FileReader(file));
 			String line = null;
@@ -181,6 +186,164 @@ public class HuffmanEncoding {
 			Node[] childs = {n1,n2};
 			parent.childs = childs;
 			huffQueue.add(parent);
+		}
+		//Build encode map
+		traverseNode(huffTree,"0");
+		//Build decode map
+		Iterator<byte[]> it1 = encodingMap.keySet().iterator();
+		while(it1.hasNext()) {
+			byte[] item = it1.next();
+			decodingMap.put(encodingMap.get(item), item);
+		}
+		
+	}
+	
+	private void traverseNode(Node n, String code) {
+		if(n == null) {
+			return;
+		}
+		if(n.content != null) {
+			//This is a leaf
+			encodingMap.put(n.content, Byte.decode(code));
+			return;
+		} else {
+			traverseNode(n.childs[0],code+"0");
+			traverseNode(n.childs[1],code+"1");
+		}
+	}
+	
+	private void encodeFile(String file) throws Exception {
+		BufferedReader br = null;
+		FileOutputStream fos = null;
+		BufferedInputStream bis = null;
+		try {
+		if(isText(file)) {
+			br = new BufferedReader(new FileReader(file));
+			File f = new File(file+".coded");
+	    	f.delete();
+			fos = new FileOutputStream(file+".coded");
+			String line = null;
+			while((line = br.readLine()) != null) {
+				String[] words = line.split(" ");
+				for (int i = 0; i < words.length; i++) {
+					if(words[i].trim().equals("")) {
+						continue;
+					} else {
+						byte[] item = words[i].getBytes("UTF-8");
+						byte code = encodingMap.get(item);
+						byte [] ar = {code};
+						fos.write(ar);
+					}
+				}
+			}
+		} else {
+			bis = new BufferedInputStream(new FileInputStream(file), MCU);
+			File f = new File(file+".coded");
+	    	f.delete();
+			fos = new FileOutputStream(file+".coded");
+			byte[] element = new byte[MCU];
+			while(bis.read(element) != -1) {
+				byte code = encodingMap.get(element);
+				byte [] ar = {code};
+				fos.write(ar);
+			}
+		}
+		} finally {
+			if(fos != null) {
+				fos.close();
+			}
+			if(bis != null) {
+				bis.close();
+			}
+			if(br != null) {
+				br.close();
+			}
+		}
+	}
+	
+	private void decodeFile(String file) throws Exception {
+		BufferedInputStream bis = null;
+		FileOutputStream fos = null;
+		try {
+		boolean isTextFile = false;
+		if(new File(file+".text").exists()) {
+			isTextFile = true;
+		}
+		String encodedFile = file+".coded";
+		bis = new BufferedInputStream(new FileInputStream(encodedFile),1);
+		fos = new FileOutputStream(file+".decoded");
+		Byte b = Byte.valueOf((byte) bis.read());
+		fos.write(decodingMap.get(b));
+		if(isTextFile) {
+			fos.write(" ".getBytes("UTF-8"));
+		}		
+		} finally {
+			if(fos != null) {
+				fos.close();
+			}
+			if(bis != null) {
+				bis.close();
+			}
+		}
+	}
+	
+	private void touch(String file)
+	{
+		try {
+			if (this.isText(file)) {
+				file = file + ".text";
+			} else {
+				file = file + ".binary";
+			}
+			new FileOutputStream(file).close();
+		} catch (IOException e) {
+	    }
+	}
+	
+	private void saveDecodingMap(String file) {
+		ObjectOutputStream oos = null;
+		try {
+			File f = new File(file+".codermap");
+	    	f.delete();
+			oos = new ObjectOutputStream(new FileOutputStream(file+".codermap"));
+			oos.writeObject(decodingMap);
+		} catch(Exception ex) {
+			ex.printStackTrace();
+		} finally {
+			if(oos != null) {
+				try {
+					oos.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	private void loadDecodingMap(String file) {
+		FileInputStream fis = null;
+    	ObjectInputStream ois = null;
+		try {
+			fis = new FileInputStream(file+".codermap");
+			ois = new ObjectInputStream(fis);
+			this.decodingMap = (Map<Byte, byte[]>) ois.readObject();
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (ois != null) {
+				try {
+					ois.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			if (fis != null) {
+				try {
+					fis.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 	
