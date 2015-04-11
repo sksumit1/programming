@@ -38,6 +38,7 @@ public class HuffmanEncoding {
 			return false;
 		}
 	}*/
+	//TODO: Refine to know the inputtype on the fly.For e.g. assume all files ending with .txt is text file, else its a binary file
 	private boolean isText(String file) {
 		return true;   //For images etc make this return false
 	}
@@ -131,7 +132,9 @@ public class HuffmanEncoding {
 	private Map<byte[],Integer> items = new HashMap<byte[],Integer>();
 	private PriorityQueue<Node> huffQueue = new PriorityQueue<Node>();
 	private Node huffTree = null;
+	//TODO: Change it to Map<ByteArrayWrapper,Long> for more unique works
 	private Map<ByteArrayWrapper,Byte> encodingMap = new HashMap<ByteArrayWrapper,Byte>();
+	//TODO: Change it to Map<ByteArrayWrapper,Long> for more unique works
 	private Map<Byte,ByteArrayWrapper> decodingMap = new HashMap<Byte,ByteArrayWrapper>();
 	
 	private void generateHuffEncodingMap(String file) throws IOException, UnsupportedEncodingException {
