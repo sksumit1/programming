@@ -349,7 +349,7 @@ public class HuffmanEncoding {
 	
 	//TODO: Make this program menu driven.
 	//Run it once to save data
-	//Run it again to decode data
+	//Run it again to decode data 
 	public static void main(String[] args) throws Exception {
 		String file = "abc.txt";
 		HuffmanEncoding obj = new HuffmanEncoding();
