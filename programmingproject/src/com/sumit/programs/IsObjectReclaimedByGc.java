@@ -20,6 +20,14 @@ public class IsObjectReclaimedByGc {
 		ReferenceQueue<Object> rq = new ReferenceQueue<Object>();
 		
 		// Create a new phantom reference that refers to the given object and is registered with this queue.
+		//PhantomReferences avoid a fundamental problem with finalization: finalize() methods can "resurrect" objects by creating new strong references to them. 
+		//So what, you say? Well, the problem is that an object which overrides finalize() must now be determined to be garbage in at least two separate garbage collection cycles in order to be collected. 
+		//When the first cycle determines that it is garbage, it becomes eligible for finalization. 
+		//Because of the (slim, but unfortunately real) possibility that the object was "resurrected" during finalization, the garbage collector has to run again before the object can actually be removed. 
+		//And because finalization might not have happened in a timely fashion, an arbitrary number of garbage collection cycles might have happened while the object was waiting for finalization. 
+		//This can mean serious delays in actually cleaning up garbage objects, and is why you can get OutOfMemoryErrors even when most of the heap is garbage.
+		//With PhantomReference, this situation is impossible -- when a PhantomReference is enqueued, there is absolutely no way to get a pointer to the now-dead object (which is good, because it isn't in memory any longer). 
+		//Because PhantomReference cannot be used to resurrect an object, the object can be instantly cleaned up during the first garbage collection cycle in which it is found to be phantomly reachable.
 		PhantomReference<Object> wr = new PhantomReference<Object>(object, rq);
 
 		// start a new thread that will remove all references of object
