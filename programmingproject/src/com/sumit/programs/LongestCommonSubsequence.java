@@ -1,5 +1,14 @@
 package com.sumit.programs;
-
+//https://www.youtube.com/watch?v=Qf5R-uYQRPk
+/**
+ * Case 1
+ * P0 = "    x"    Q0 = "    x"
+ * LCS(P0,Q0) = 1+ LCS(P1,Q1)
+ * 
+ * Case 2
+ * P0 = "    x"    Q0 = "    y"
+ * LCS(P0,Q0) = max{ LCS(P1,Q0), LCS(P0,Q1) }
+ */
 import java.io.*;
 import java.util.*;
 
