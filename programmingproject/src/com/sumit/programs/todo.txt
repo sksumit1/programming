@@ -1,0 +1,6 @@
+Todo
+
+List.of methods better than Arrays.asList(...)
+
+Also
+Map::of, and Map.ofEntries
