@@ -1,0 +1,56 @@
+com.sumit.programs;
+/******************************************************************************
+
+                            Print the left view of a binary tree
+                            
+                            1
+                        2       3
+                          6    7   8
+                                4   5
+                                      9
+         Output : 1 2 6 4 9
+*******************************************************************************/
+
+class Node {
+    int data;
+    Node left, right;
+    public Node(int data) {
+        this.data = data;
+        left = right = null;
+    }
+}
+
+
+public class LeftViewOfTree
+{
+    
+    private static int max(int i, int j) {
+        return i>j ? i: j;
+    }
+    private static int recurseAndPrint(Node n, int nodeLevel, int maxDepthReached) {
+        if (n == null) {
+            return maxDepthReached;
+        }
+        if (nodeLevel > maxDepthReached) {
+            System.out.print(n.data+" ");
+            maxDepthReached = nodeLevel;
+        }
+        int ld = recurseAndPrint(n.left, nodeLevel+1, max(nodeLevel, maxDepthReached));
+        int rd = recurseAndPrint(n.right, nodeLevel+1, max(ld,max(nodeLevel, maxDepthReached)));
+        return max(ld, rd);
+    }
+    
+	public static void main(String[] args) {
+		Node root = new Node(1);
+		root.left = new Node(2);
+		root.left.right = new Node(6);
+		root.right = new Node(3);
+		root.right.left = new Node(7);
+		root.right.left.right = new Node(4);
+		root.right.right = new Node(8);
+		root.right.right.right = new Node(5);
+		root.right.right.right.right = new Node(9);
+		recurseAndPrint(root, 1, 0);
+		
+	}
+}
